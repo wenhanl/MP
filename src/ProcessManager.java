@@ -10,12 +10,13 @@ public class ProcessManager {
 
     public static void main(String args[]){
 
-
         if(args.length == 0) { // Start master
             MasterNode master = new MasterNode();
+
+            master.start();
             // master.run();
         }
-        else if (args.length > 1 && args[0] == "-s"){
+        else if (args.length >= 1 && args[0].equals("-s")){
             SlaveNode slave = new SlaveNode();
         }
         else {

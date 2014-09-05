@@ -1,14 +1,43 @@
-import java.util.ArrayList;
-import java.io.*;
 /**
  * Created by wenhanl on 14-9-4.
  */
+
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.io.*;
+
 public class MasterNode {
     private ArrayList<NodeInfo> slaveList;
+    private ServerSocket socketServer;
+    public static final int PORT = 15640;
+
 
     MasterNode(){
         slaveList = new ArrayList<>();
+
         // Listen to slave connections
+        Thread listening = new Thread(new Runnable() {
+            public void run()
+            {
+                try {
+                    socketServer = new ServerSocket(PORT);
+                    while(true){
+                        Socket sock = socketServer.accept();
+                        DataInputStream input = new DataInputStream(sock.getInputStream());
+                        DataOutputStream output = new DataOutputStream(sock.getOutputStream());
+                        NodeInfo slave = new NodeInfo(sock, input, output);
+                        slaveList.add(slave);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        listening.start();
+
+
+
         BufferedReader buffInput = new BufferedReader(new InputStreamReader(System.in));
         String cmdInput = "";
         while(true)
@@ -41,7 +70,26 @@ public class MasterNode {
             }
         }
     }
-    void printslaveList(){
+    public void printsalveList(){
         /* TODO */
+
     }
+
+   /* public void start(){
+        // Start socket sever Listen to slave connections
+        try {
+            socketServer = new ServerSocket(PORT);
+            while(true){
+                Socket sock = socketServer.accept();
+                DataInputStream input = new DataInputStream(sock.getInputStream());
+                DataOutputStream output = new DataOutputStream(sock.getOutputStream());
+                NodeInfo slave = new NodeInfo(sock, input, output);
+                slaveList.add(slave);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }*/
 }

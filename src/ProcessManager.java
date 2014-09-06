@@ -12,12 +12,7 @@ public class ProcessManager {
 
         if(args.length == 0) { // Start master
             MasterNode master = new MasterNode();
-<<<<<<< HEAD
 
-            // master.start();
-=======
->>>>>>> 8aa7f7cc9a26fc819376b702d310a042f8e7802b
-            // master.run();
         }
         else if (args.length >= 1 && args[0].equals("-s")){
             SlaveNode slave = new SlaveNode();

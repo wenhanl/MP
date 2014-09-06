@@ -21,11 +21,8 @@ public class SlaveNode {
 
     SlaveNode(){
         try {
-            socket = new Socket("localhost", 15640);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
 
-<<<<<<< HEAD
+            /*
             while(true){
                 int length = in.readInt();
                 byte[] data = new byte[length];
@@ -33,7 +30,8 @@ public class SlaveNode {
                     String cmdInput = new String(data);
                     System.out.println(cmdInput);
                 }
-=======
+             */
+
             //SocketChannel sc = socket.getChannel();
 
             SocketChannel sc = SocketChannel.open();
@@ -68,8 +66,6 @@ public class SlaveNode {
 
                     }
                 }
-
->>>>>>> 8aa7f7cc9a26fc819376b702d310a042f8e7802b
             }
         } catch (IOException e) {
             e.printStackTrace();

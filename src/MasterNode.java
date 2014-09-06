@@ -32,7 +32,7 @@ public class MasterNode {
                         count++;
 
                         // test
-                        output.writeChars("Hello world!");
+                        //output.writeChars("Hello world!");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -70,10 +70,11 @@ public class MasterNode {
                     int slaveid = Integer.parseInt(args[2]);
                     NodeInfo curslave = slaveList.get(slaveid);
                     try {
-                        //byte[] data = cmdInput.getBytes();
-                        curslave.getoutputstream().writeInt((cmdInput.getBytes().length));
-                        curslave.getoutputstream().write(cmdInput.getBytes());
-                        curslave.getoutputstream().flush();
+                        if(curslave==null) {
+                            System.out.println("error: slave not exists!");
+                            continue;
+                        }
+                         curslave.getoutputstream().writeChars(cmdInput);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -90,24 +91,4 @@ public class MasterNode {
 
     }
 
-   /* public void start(){
-        // Start socket sever Listen to slave connections
-        try {
-            socketServer = new ServerSocket(PORT);
-            int count = 0;
-            while(true){
-                Socket sock = socketServer.accept();
-                DataInputStream input = new DataInputStream(sock.getInputStream());
-                DataOutputStream output = new DataOutputStream(sock.getOutputStream());
-                NodeInfo slave = new NodeInfo(count, sock, input, output);
-                slaveList.add(slave);
-                count++;
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }*/
 }

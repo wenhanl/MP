@@ -7,21 +7,18 @@ import java.net.Socket;
 public class NodeInfo {
     public int status;
     private Socket sock;
-    private BufferedReader input;
-    private PrintWriter output;
+    private DataInputStream input;
+    private DataOutputStream output;
 
     NodeInfo(Socket sock, DataInputStream input, DataOutputStream output){
         this.sock = sock;
-        try {
-            this.input = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-            this.output = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
-        }catch(IOException e){e.printStackTrace();}
-        //sock.getInputStream()
+            this.input = input;
+            this.output = output;
     }
-    BufferedReader getBufferedReader(){
+    DataInputStream getinputstream(){
         return input;
     }
-    PrintWriter getPrintWriter(){
+    DataOutputStream getoutputstream(){
         return output;
     }
 

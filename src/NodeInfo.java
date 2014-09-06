@@ -1,5 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -8,18 +7,23 @@ import java.net.Socket;
 public class NodeInfo {
     public int status;
     private Socket sock;
-    private DataInputStream input;
-    private DataOutputStream output;
-    private int id;
+    private BufferedReader input;
+    private PrintWriter output;
 
-    NodeInfo(int id, Socket sock, DataInputStream input, DataOutputStream output){
+    NodeInfo(Socket sock, DataInputStream input, DataOutputStream output){
         this.sock = sock;
-        this.input = input;
-        this.output = output;
-        this.id = id;
+        try {
+            this.input = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            this.output = new PrintWriter(new OutputStreamWriter(sock.getOutputStream()));
+        }catch(IOException e){e.printStackTrace();}
+        //sock.getInputStream()
+    }
+    BufferedReader getBufferedReader(){
+        return input;
+    }
+    PrintWriter getPrintWriter(){
+        return output;
     }
 
-    public int getId(){
-        return id;
-    }
+
 }

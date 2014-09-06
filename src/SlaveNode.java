@@ -16,6 +16,15 @@ public class SlaveNode {
             socket = new Socket("localhost", 15640);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
+
+            while(true){
+                int length = in.readInt();
+                byte[] data = new byte[length];
+                if(in.read(data,0,length)>0) {
+                    String cmdInput = new String(data);
+                    System.out.println(cmdInput);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

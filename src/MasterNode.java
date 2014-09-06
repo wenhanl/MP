@@ -4,17 +4,17 @@
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.io.*;
+import java.util.HashMap;
 
 public class MasterNode {
-    private ArrayList<NodeInfo> slaveList;
+    private HashMap<Integer,NodeInfo> slaveList;
     private ServerSocket socketServer;
     public static final int PORT = 15640;
 
 
     MasterNode(){
-        slaveList = new ArrayList<>();
+        slaveList = new HashMap<>();
 
         // Listen to slave connections
         Thread listening = new Thread(new Runnable() {
@@ -27,8 +27,8 @@ public class MasterNode {
                         Socket sock = socketServer.accept();
                         DataInputStream input = new DataInputStream(sock.getInputStream());
                         DataOutputStream output = new DataOutputStream(sock.getOutputStream());
-                        NodeInfo slave = new NodeInfo(count, sock, input, output);
-                        slaveList.add(slave);
+                        NodeInfo slave = new NodeInfo(sock, input, output);
+                        slaveList.put(count,slave);
                         count++;
                     }
                 } catch (IOException e) {
@@ -64,7 +64,17 @@ public class MasterNode {
             }
             else if(args.length==3){
                 if(args[0].equals("run")){
-                    /* TODO */
+                    int slaveid = Integer.parseInt(args[2]);
+                    NodeInfo curslave = slaveList.get(slaveid);
+                    try {
+                        //byte[] data = cmdInput.getBytes();
+                        curslave.getoutputstream().writeInt((cmdInput.getBytes().length));
+                        curslave.getoutputstream().write(cmdInput.getBytes());
+                        curslave.getoutputstream().flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 else if(args[0].equals("migrate")){
                     /* TODO */

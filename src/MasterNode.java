@@ -22,12 +22,14 @@ public class MasterNode {
             {
                 try {
                     socketServer = new ServerSocket(PORT);
+                    int count = 0;
                     while(true){
                         Socket sock = socketServer.accept();
                         DataInputStream input = new DataInputStream(sock.getInputStream());
                         DataOutputStream output = new DataOutputStream(sock.getOutputStream());
-                        NodeInfo slave = new NodeInfo(sock, input, output);
+                        NodeInfo slave = new NodeInfo(count, sock, input, output);
                         slaveList.add(slave);
+                        count++;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -79,12 +81,15 @@ public class MasterNode {
         // Start socket sever Listen to slave connections
         try {
             socketServer = new ServerSocket(PORT);
+            int count = 0;
             while(true){
                 Socket sock = socketServer.accept();
                 DataInputStream input = new DataInputStream(sock.getInputStream());
                 DataOutputStream output = new DataOutputStream(sock.getOutputStream());
-                NodeInfo slave = new NodeInfo(sock, input, output);
+                NodeInfo slave = new NodeInfo(count, sock, input, output);
                 slaveList.add(slave);
+                count++;
+
             }
         } catch (IOException e) {
             e.printStackTrace();

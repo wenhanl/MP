@@ -7,13 +7,19 @@ import java.net.Socket;
  */
 public class NodeInfo {
     public int status;
-    public Socket sock;
-    public DataInputStream input;
-    public DataOutputStream output;
+    private Socket sock;
+    private DataInputStream input;
+    private DataOutputStream output;
+    private int id;
 
-    NodeInfo(Socket sock, DataInputStream input, DataOutputStream output){
+    NodeInfo(int id, Socket sock, DataInputStream input, DataOutputStream output){
         this.sock = sock;
         this.input = input;
         this.output = output;
+        this.id = id;
+    }
+
+    public int getId(){
+        return id;
     }
 }

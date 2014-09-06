@@ -12,8 +12,6 @@ public class ProcessManager {
 
         if(args.length == 0) { // Start master
             MasterNode master = new MasterNode();
-
-            master.start();
             // master.run();
         }
         else if (args.length >= 1 && args[0].equals("-s")){

@@ -30,6 +30,9 @@ public class MasterNode {
                         NodeInfo slave = new NodeInfo(count, sock, input, output);
                         slaveList.add(slave);
                         count++;
+
+                        // test
+                        output.writeChars("Hello world!");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

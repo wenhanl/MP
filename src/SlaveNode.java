@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -21,11 +20,6 @@ public class SlaveNode {
 
     SlaveNode(){
         try {
-            socket = new Socket("localhost", 15640);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-
-            //SocketChannel sc = socket.getChannel();
 
             SocketChannel sc = SocketChannel.open();
             sc.connect(new InetSocketAddress("localhost", 15640));

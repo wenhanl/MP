@@ -1,13 +1,9 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
@@ -19,22 +15,21 @@ import java.lang.reflect.InvocationTargetException;
  * Created by wenhanl on 14-9-4.
  */
 public class SlaveNode {
-    Socket socket;
-    DataInputStream in;
-    DataOutputStream out;
+    private SocketChannel sc;
 
     SlaveNode(){
         try {
-
-            SocketChannel sc = SocketChannel.open();
+            // Open a socket channel connecting to master node on port 15640
+            sc = SocketChannel.open();
             sc.connect(new InetSocketAddress("localhost", 15640));
             sc.configureBlocking(false);
 
-
+            // Create selector and bind socketChannel to it
             Selector selector = Selector.open();
             sc.register(selector, SelectionKey.OP_READ);
 
             while(true){
+                // Use select to block until something readable in channel
                 selector.select();
 
                 Set<SelectionKey> keySet = selector.selectedKeys();
@@ -54,36 +49,26 @@ public class SlaveNode {
 
                         String cmdTmpInput = new String(buf.array());
                         StringBuilder tmp = new StringBuilder();
-                        for(int i=0;i<cmdTmpInput.length();i++)
+                        for(int i=0; i<cmdTmpInput.length(); i++)
                             if((int)cmdTmpInput.charAt(i)!=0)
                                 tmp.append(cmdTmpInput.charAt(i));
                         String cmdInput = tmp.toString();
 
-
-
                         String args[]=cmdInput.split(" ");
                         if(args[0].equals("run")){
 
-
-                            Class<MigratableProcess> mpClass = null;
-                            Constructor<?> mpConstructor = null;
                             MigratableProcess mpProcess = null;
                             try {
-                                mpClass = (Class<MigratableProcess>) Class.forName(args[2]);
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                            }
-
-                            try {
-                                mpConstructor = mpClass.getConstructor(String[].class);
-                            } catch (NoSuchMethodException e) {
-                                e.printStackTrace();
-                            }
-                            Object[] mpArgs = { Arrays.copyOfRange(args, 3, args.length) };
-                            try {
+                                Class<MigratableProcess> mpClass = (Class<MigratableProcess>) Class.forName(args[2]);
+                                Constructor<?> mpConstructor = mpClass.getConstructor(String[].class);
+                                Object[] mpArgs = { Arrays.copyOfRange(args, 3, args.length) };
                                 mpProcess = (MigratableProcess) mpConstructor.newInstance(mpArgs);
+                            } catch (ClassNotFoundException e) {
+                                System.err.format("Class Not Found: Can't find class with provided class name", e.getMessage());
+                            } catch (NoSuchMethodException e) {
+                                System.err.format("No such method: No such constructor", e.getMessage());
                             } catch (InstantiationException e) {
-                                e.printStackTrace();
+                                System.err.format("Instantiation Error:", e.getMessage());
                             } catch (IllegalAccessException e) {
                                 e.printStackTrace();
                             } catch (InvocationTargetException e) {

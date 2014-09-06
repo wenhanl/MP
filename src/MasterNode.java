@@ -70,7 +70,7 @@ public class MasterNode {
             }
         }
     }
-    public void printsalveList(){
+    public void printslaveList(){
         /* TODO */
 
     }

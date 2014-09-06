@@ -21,6 +21,10 @@ public class NodeInfo {
     DataOutputStream getoutputstream(){
         return output;
     }
+    Socket getsocket() { return sock; }
+    public String toString(){
+        return sock.getInetAddress()+"\t "+sock.getPort();
+    }
 
 
 }

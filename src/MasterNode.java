@@ -45,50 +45,56 @@ public class MasterNode {
 
         BufferedReader buffInput = new BufferedReader(new InputStreamReader(System.in));
         String cmdInput = "";
-        while(true)
-        {
+        while(true) {
             System.out.print("--> ");
             try {
                 cmdInput = buffInput.readLine();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            String args[]=cmdInput.split(" ");
-            if(args.length==0)
+            String args[] = cmdInput.split(" ");
+            if (args.length == 0)
                 continue;
-            else if(args.length==1){
-                if(args[0].equals("list"))
+            else if (args.length == 1) {
+                if (args[0].equals("list"))
                     printslaveList();
-            }
-            else if(args.length==2){
-                if(args[0].equals("terminate")){
+            } else if (args.length == 2) {
+                if (args[0].equals("terminate")) {
                     /* TODO */
-                }
-            }
-            else if(args.length==3){
-                if(args[0].equals("run")){
-                    int slaveid = Integer.parseInt(args[2]);
+                    int slaveid = Integer.parseInt(args[1]);
                     NodeInfo curslave = slaveList.get(slaveid);
                     try {
-                        if(curslave==null) {
+                        slaveList.get(slaveid).getsocket().close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    slaveList.remove(slaveid);
+                }
+            } else if (args.length >= 3) {
+                if (args[0].equals("run")) {
+                    int slaveid = Integer.parseInt(args[1]);
+                    NodeInfo curslave = slaveList.get(slaveid);
+                    try {
+                        if (curslave == null) {
                             System.out.println("error: slave not exists!");
                             continue;
                         }
-                         curslave.getoutputstream().writeChars(cmdInput);
+                        curslave.getoutputstream().writeChars(cmdInput);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                }
-                else if(args[0].equals("migrate")){
+                } else if (args[0].equals("migrate")) {
                     /* TODO */
                 }
             }
         }
+
     }
     public void printslaveList(){
-        /* TODO */
-
+        Object[] arr = slaveList.keySet().toArray();
+        for(int i=0;i<arr.length;i++)
+            System.out.println("Slave ID: "+i+"\t "+slaveList.get(i).toString());
     }
 
 }

@@ -1,5 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -10,16 +9,22 @@ public class NodeInfo {
     private Socket sock;
     private DataInputStream input;
     private DataOutputStream output;
-    private int id;
 
-    NodeInfo(int id, Socket sock, DataInputStream input, DataOutputStream output){
+    NodeInfo(Socket sock, DataInputStream input, DataOutputStream output){
         this.sock = sock;
-        this.input = input;
-        this.output = output;
-        this.id = id;
+            this.input = input;
+            this.output = output;
+    }
+    DataInputStream getinputstream(){
+        return input;
+    }
+    DataOutputStream getoutputstream(){
+        return output;
+    }
+    Socket getsocket() { return sock; }
+    public String toString(){
+        return sock.getInetAddress()+"\t "+sock.getPort();
     }
 
-    public int getId(){
-        return id;
-    }
+
 }

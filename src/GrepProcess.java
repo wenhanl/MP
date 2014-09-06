@@ -32,7 +32,6 @@ public class GrepProcess implements MigratableProcess
     {
         PrintStream out = new PrintStream(outFile);
         DataInputStream in = new DataInputStream(inFile);
-
         try {
             while (!suspending) {
                 String line = in.readLine();

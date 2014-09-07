@@ -46,6 +46,9 @@ public class MasterNode {
                 e.printStackTrace();
             }
             String args[] = cmdInput.split(" ");
+
+            /* TODO */
+            // Arguments error handling
             if (args.length == 0)
                 continue;
             else if (args.length == 1) {

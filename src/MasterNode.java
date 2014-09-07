@@ -12,7 +12,6 @@ public class MasterNode {
     private ServerSocket socketServer;
     public static final int PORT = 15640;
 
-
     MasterNode(){
         slaveList = new HashMap<>();
 
@@ -30,9 +29,6 @@ public class MasterNode {
                         NodeInfo slave = new NodeInfo(sock, input, output);
                         slaveList.put(count,slave);
                         count++;
-
-                        // test
-                        //output.writeChars("Hello world!");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -40,9 +36,6 @@ public class MasterNode {
             }
         });
         listening.start();
-
-
-
         BufferedReader buffInput = new BufferedReader(new InputStreamReader(System.in));
         String cmdInput = "";
         while(true) {
@@ -60,11 +53,11 @@ public class MasterNode {
                     printslaveList();
             } else if (args.length == 2) {
                 if (args[0].equals("terminate")) {
-                    /* TODO */
                     int slaveid = Integer.parseInt(args[1]);
                     NodeInfo curslave = slaveList.get(slaveid);
                     try {
-                        slaveList.get(slaveid).getsocket().close();
+                        curslave.getoutputstream().writeChars(cmdInput);
+                        curslave.getsocket().close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -83,7 +76,6 @@ public class MasterNode {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                 } else if (args[0].equals("migrate")) {
                     /* TODO */
                 }
@@ -91,6 +83,7 @@ public class MasterNode {
         }
 
     }
+
     public void printslaveList(){
         Object[] arr = slaveList.keySet().toArray();
         for(int i=0;i<arr.length;i++)

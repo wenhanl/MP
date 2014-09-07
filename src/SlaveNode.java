@@ -6,10 +6,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.channels.SocketChannel;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Arrays;
@@ -26,12 +23,9 @@ public class SlaveNode {
 
     SlaveNode(){
         try {
-
             SocketChannel sc = SocketChannel.open();
             sc.connect(new InetSocketAddress("localhost", 15640));
             sc.configureBlocking(false);
-
-
             Selector selector = Selector.open();
             sc.register(selector, SelectionKey.OP_READ);
 
@@ -60,12 +54,8 @@ public class SlaveNode {
                                 tmp.append(cmdTmpInput.charAt(i));
                         String cmdInput = tmp.toString();
 
-
-
                         String args[]=cmdInput.split(" ");
                         if(args[0].equals("run")){
-
-
                             Class<MigratableProcess> mpClass = null;
                             Constructor<?> mpConstructor = null;
                             MigratableProcess mpProcess = null;
@@ -74,7 +64,6 @@ public class SlaveNode {
                             } catch (ClassNotFoundException e) {
                                 e.printStackTrace();
                             }
-
                             try {
                                 mpConstructor = mpClass.getConstructor(String[].class);
                             } catch (NoSuchMethodException e) {
@@ -90,21 +79,16 @@ public class SlaveNode {
                             } catch (InvocationTargetException e) {
                                 e.printStackTrace();
                             }
-
                             Thread tp = new Thread(mpProcess);
                             tp.start();
-
                         }
-
-
-
-
+                        else if(args[0].equals("terminate"))
+                            System.exit(1);
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

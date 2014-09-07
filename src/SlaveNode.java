@@ -20,7 +20,6 @@ public class SlaveNode {
     SlaveNode(){
         try {
 
-
             // Open a socket channel connecting to master node on port 15640
             sc = SocketChannel.open();
             sc.connect(new InetSocketAddress("localhost", 15640));

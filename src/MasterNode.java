@@ -64,6 +64,13 @@ public class MasterNode {
 
                             }
                             else if(key.isReadable()){
+                                SocketChannel sc = (SocketChannel) key.channel();
+                                ByteBuffer bf = ByteBuffer.allocate(500);
+                                sc.read(bf);
+
+                                // do something with bf
+
+
 
                             }
 

@@ -29,7 +29,10 @@ public class SlaveNode {
             Selector selector = Selector.open();
             sc.register(selector, SelectionKey.OP_READ);
 
-            while(true){
+            boolean closed = false;
+
+            while(!closed){
+
                 // Use select to block until something readable in channel
                 selector.select();
 
@@ -45,7 +48,8 @@ public class SlaveNode {
                         int bufRead = sc.read(buf);
 
                         if(bufRead == -1){
-                            System.out.println("Read error");
+                            System.out.println("Remote socket closed");
+                            closed = true;
                         }
 
                         String cmdTmpInput = new String(buf.array());

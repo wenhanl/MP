@@ -1,29 +1,33 @@
 import java.io.*;
-import java.net.Socket;
+import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 
 /**
  * Created by wenhanl on 14-9-4.
  */
 public class NodeInfo {
     public int status;
-    private Socket sock;
-    private DataInputStream input;
-    private DataOutputStream output;
+    private SocketChannel socketChannel;
 
-    NodeInfo(Socket sock, DataInputStream input, DataOutputStream output){
-        this.sock = sock;
-            this.input = input;
-            this.output = output;
+    NodeInfo(SocketChannel sc){
+        this.socketChannel = sc;
     }
-    DataInputStream getinputstream(){
-        return input;
+
+    SocketChannel getSocketChannel()
+    {
+        return socketChannel;
     }
-    DataOutputStream getoutputstream(){
-        return output;
-    }
-    Socket getsocket() { return sock; }
+
     public String toString(){
-        return sock.getInetAddress()+"\t "+sock.getPort();
+
+        try {
+            SocketAddress address = socketChannel.getRemoteAddress();
+            return address.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 

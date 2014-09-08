@@ -1,7 +1,4 @@
-import java.io.PrintStream;
-import java.io.EOFException;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.Thread;
 import java.lang.InterruptedException;
 
@@ -15,6 +12,7 @@ public class GrepProcess implements MigratableProcess
     private String query;
 
     private volatile boolean suspending;
+    private boolean finished = false;
 
     public GrepProcess(String args[]) throws Exception
     {
@@ -30,8 +28,9 @@ public class GrepProcess implements MigratableProcess
 
     public void run()
     {
-        PrintStream out = new PrintStream(outFile);
         DataInputStream in = new DataInputStream(inFile);
+        PrintStream out = new PrintStream(outFile);
+        byte[] buf = new byte[256];
         try {
             while (!suspending) {
                 String line = in.readLine();
@@ -39,20 +38,32 @@ public class GrepProcess implements MigratableProcess
                 if (line == null) break;
 
                 if (line.contains(query)) {
+
                     out.println(line);
                 }
+                System.out.println(line);
 
                 // Make grep take longer so that we don't require extremely large files for interesting results
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
                     // ignore it
                 }
             }
         } catch (EOFException e) {
+            finished = true;
             //End of File
         } catch (IOException e) {
             System.out.println ("GrepProcess: Error: " + e);
+        }
+
+        try {
+            in.close();
+            inFile.setMigrated(true);
+            out.close();
+            outFile.setMigrated(true);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
 
@@ -62,7 +73,7 @@ public class GrepProcess implements MigratableProcess
     public void suspend()
     {
         suspending = true;
-        while (suspending);
+        while (suspending && !finished);
     }
 
 }

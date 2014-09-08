@@ -38,9 +38,13 @@ public class SlaveNode {
             Selector selector = Selector.open();
             sc.register(selector, SelectionKey.OP_READ);
 
+
             readBuffer = ByteBuffer.allocate(len);
 
-            while(true){
+
+            boolean closed = false;
+
+            while(!closed){
                 // Use select to block until something readable in channel
                 selector.select();
 
@@ -59,7 +63,8 @@ public class SlaveNode {
                         int bufRead = sc.read(readBuffer);
 
                         if(bufRead == -1){
-                            System.out.println("Read error");
+                            System.out.println("Remote socket closed");
+                            closed = true;
                         }
 
                         String cmdInput = new String(readBuffer.array(),"UTF-8");
@@ -104,29 +109,6 @@ public class SlaveNode {
                             outObj.flush();
                             outObj.close();
                             outObjStream.close();
-                            /*
-                            //debug
-                            Thread rt = new Thread(proSuspend);
-                            rt.start();
-                            //PrintStream out = new PrintStream(new TransactionalFileOutputStream(args[1],false));
-                            //out.println("Suspended in this line\n\n");
-                            processList.put(args[1],proSuspend);
-                            //debug
-                            */
-
-
-
-
-                            /*
-                            //debug
-                            MigratableProcess proRestore = null;
-                            try {
-                                proRestore = (MigratableProcess) inObj.readObject();
-                            } catch (ClassNotFoundException e) {
-                                System.err.format("Class Not Found: Can't find class with provided class name", e.getMessage());
-                            }
-                            //debug
-                            */
                         }
                         else if(args[0].equals("restore")){
                             FileInputStream inObjStream = new FileInputStream(args[1]+".obj");
@@ -143,16 +125,6 @@ public class SlaveNode {
                             rt.start();
                             processList.put(args[1],proRestore);
                         }
-
-
-
-
-
-
-
-
-
-
                     }
                 }
             }

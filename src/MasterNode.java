@@ -2,34 +2,72 @@
  * Created by wenhanl on 14-9-4.
  */
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
 import java.io.*;
+
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class MasterNode {
     private HashMap<Integer,NodeInfo> slaveList;
-    private ServerSocket socketServer;
     public static final int PORT = 15640;
+    private ByteBuffer readBuffer;
 
     MasterNode(){
         slaveList = new HashMap<>();
 
         // Listen to slave connections
+        startListener();
+
+        // Start user console
+        startConsole();
+    }
+
+    // Open a background thread to listen to slave connection.
+    public void startListener(){
         Thread listening = new Thread(new Runnable() {
             public void run()
             {
                 try {
-                    socketServer = new ServerSocket(PORT);
-                    int count = 0;
+
+                    ServerSocketChannel serverChannel = ServerSocketChannel.open();
+                    serverChannel.socket().bind(new InetSocketAddress(PORT));
+                    Selector selector = Selector.open();
+                    serverChannel.configureBlocking(false);
+
+                    serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+                    int connection = 0;
                     while(true){
-                        Socket sock = socketServer.accept();
-                        DataInputStream input = new DataInputStream(sock.getInputStream());
-                        DataOutputStream output = new DataOutputStream(sock.getOutputStream());
-                        NodeInfo slave = new NodeInfo(sock, input, output);
-                        slaveList.put(count,slave);
-                        count++;
+                        int readyChannels = selector.select();
+
+                        if(readyChannels == 0) continue;
+
+                        Set<SelectionKey> keys = selector.selectedKeys();
+                        Iterator<SelectionKey> keyIterator = keys.iterator();
+
+                        while(keyIterator.hasNext()){
+                            SelectionKey key = keyIterator.next();
+
+                            if(key.isAcceptable()){
+                                ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
+                                SocketChannel sc = ssc.accept();
+                                sc.configureBlocking(false);
+                                sc.register(selector, SelectionKey.OP_READ);
+                                NodeInfo node = new NodeInfo(sc);
+                                slaveList.put(connection, node);
+                                connection++;
+
+                            }
+                            else if(key.isReadable()){
+
+                            }
+
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -37,6 +75,10 @@ public class MasterNode {
             }
         });
         listening.start();
+    }
+
+    // Start User Console
+    public void startConsole(){
         BufferedReader buffInput = new BufferedReader(new InputStreamReader(System.in));
         String cmdInput = "";
         while(true) {
@@ -47,74 +89,49 @@ public class MasterNode {
                 e.printStackTrace();
             }
             String args[] = cmdInput.split(" ");
+            SocketChannel sc = null;
 
-            /* TODO */
-            // Arguments error handling
-            if (args.length == 0)
+            if (args.length == 0) {
                 continue;
-            else if (args.length == 1) {
-                if (args[0].equals("list"))
-                    printslaveList();
-            } else if (args.length == 2) {
-                if (args[0].equals("terminate")) {
-                    int slaveid = Integer.parseInt(args[1]);
-                    NodeInfo curslave = slaveList.get(slaveid);
-                    try {
-                        curslave.getoutputstream().writeChars(cmdInput);
-                        curslave.getsocket().close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    slaveList.remove(slaveid);
+            } else if (args[0].equals("list") && args.length == 1) {
+                printslaveList();
+            } else if (args[0].equals("terminate") && args.length == 2) {
+
+                int slaveId = Integer.parseInt(args[1]);
+                NodeInfo curSlave = slaveList.get(slaveId);
+                try {
+                    sc = curSlave.getSocketChannel();
+                    byte[] bytes = cmdInput.getBytes(Charset.forName("UTF-8"));
+                    ByteBuffer buffer= ByteBuffer.wrap(bytes);
+                    sc.write(buffer);
+                    sc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } else if (args.length >= 3) {
-                if (args[0].equals("run")) {
-                    int slaveid = Integer.parseInt(args[1]);
-                    NodeInfo curslave = slaveList.get(slaveid);
-                    try {
-                        if (curslave == null) {
-                            System.out.println("error: slave not exists!");
-                            continue;
-                        }
-                        byte[] out = cmdInput.getBytes(Charset.forName("UTF-8"));
-                        curslave.getoutputstream().write(out);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                slaveList.remove(slaveId);
+
+            } else if (args[0].equals("run") && args.length >= 3) {
+                int slaveid = Integer.parseInt(args[1]);
+                NodeInfo curSlave = slaveList.get(slaveid);
+                try {
+                    if (curSlave == null) {
+                        System.out.println("error: slave not exists!");
+                        continue;
                     }
-                } else if (args[0].equals("migrate")) {
-                    /* TODO */
-                    int slaveSrc = Integer.parseInt(args[2]);
-                   // int slaveDes = Integer.parseInt(args[3]);
-                    NodeInfo slaveSrcNode = slaveList.get(slaveSrc);
-                   // NodeInfo slaveDesNode = slaveList.get(slaveDes);
-                    try {
-                        String strans = "suspend" + " " + args[1];
+                    sc = curSlave.getSocketChannel();
+                    byte[] bytes = cmdInput.getBytes(Charset.forName("UTF-8"));
+                    ByteBuffer buffer= ByteBuffer.wrap(bytes);
+                    sc.write(buffer);
 
-                        byte[] out = strans.getBytes(Charset.forName("UTF-8"));
-                        slaveSrcNode.getoutputstream().write(out);
-                        //Thread.sleep(5000);
-                       // slaveDesNode.getoutputstream().writeChars("restore" + " " + args[1]);
-                    }
-                    catch (IOException e ){}
-                  //  catch (InterruptedException e){}
-                    /*
-                    int slaveSrc = Integer.parseInt(args[2]);
-                    int slaveDes = Integer.parseInt(args[3]);
-                    NodeInfo slaveSrcNode = slaveList.get(slaveSrc);
-                    NodeInfo slaveDesNode = slaveList.get(slaveDes);
-
-                        slaveSrcNode.getoutputstream().writeChars("suspend" + " " + args[1]);
-
-
-                        slaveDesNode.getoutputstream().writeChars("suspend" + " " + args[1]);
-                        */
-
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            } else if(args[0].equals("migrate") && args.length >= 3){
 
-
+            } else {
+                System.out.println("Invalid input");
             }
         }
-
     }
 
     public void printslaveList(){

@@ -31,10 +31,38 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
         fileHandler.write(l);
         offset++;
     }
+    @Override
+    public void write(byte[] b) throws IOException {
+        if (migrated) {
+            fileHandler = new RandomAccessFile(fileName, "rws");
+            migrated = false;
+            fileHandler.seek(offset);
+        }
+
+        fileHandler.write(b);
+        offset += b.length;
+    }
 
     @Override
-    public void close() throws IOException{
-        fileHandler.close();
+    public void write(byte[] b, int off, int len) throws IOException {
+        if (migrated) {
+            fileHandler = new RandomAccessFile(fileName, "rws");
+            migrated = false;
+            fileHandler.seek(offset);
+        }
+
+        fileHandler.write(b, off, len);
+        offset += len;
+    }
+
+    @Override
+    public void close(){
+        try {
+            fileHandler.close();
+        } catch (IOException e) {
+            System.out.println("Error in closing input file");
+            e.printStackTrace();
+        }
     }
 
     public void setMigrated(boolean mig) {

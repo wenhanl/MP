@@ -40,8 +40,14 @@ public class TransactionalFileInputStream extends InputStream implements Seriali
     }
 
     @Override
-    public void close() throws IOException{
-        fileHandler.close();
+    public void close(){
+        try {
+            fileHandler.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            System.out.println("Error in closing input file");
+            e.printStackTrace();
+        }
     }
 
     public void setMigrated(boolean mig) {

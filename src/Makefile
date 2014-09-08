@@ -44,6 +44,8 @@ FILE=
 
 CLASSES = \
         GrepProcess.java \
+	EncodeProcess.java \
+	SumWordProcess.java \
         MasterNode.java \
         MigratableProcess.java \
         NodeInfo.java \
@@ -91,3 +93,4 @@ run: $(MAIN).class
 
 clean:
 		$(RM) *.class transactionIO/*.class
+		$(RM) *.obj

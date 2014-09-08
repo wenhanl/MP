@@ -1,3 +1,7 @@
+/**
+ * Created by wenhanl on 14-9-4.
+ */
+
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.HashMap;
@@ -16,9 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 
-/**
- * Created by wenhanl on 14-9-4.
- */
 public class SlaveNode {
     private SocketChannel sc;
     private HashMap<String, MigratableProcess> processList = new HashMap<>();
@@ -70,6 +72,7 @@ public class SlaveNode {
                         String cmdInput = new String(readBuffer.array(),"UTF-8");
                         String tmpBuf[] = cmdInput.split("\0");
                         String args[]=tmpBuf[0].split(" ");
+                        //process command sent from master node
                         if(args[0].equals("run")){
 
                             MigratableProcess mpProcess = null;
@@ -109,6 +112,11 @@ public class SlaveNode {
                             outObj.flush();
                             outObj.close();
                             outObjStream.close();
+
+                            String str = "restore" + " " + args[1] + " " + args[2] + " " + args[3];
+                            byte[] out = str.getBytes(Charset.forName("UTF-8"));
+                            ByteBuffer buffer= ByteBuffer.wrap(out);
+                            sc.write(buffer);
                         }
                         else if(args[0].equals("restore")){
                             FileInputStream inObjStream = new FileInputStream(args[1]+".obj");

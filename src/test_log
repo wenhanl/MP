@@ -1,0 +1,30 @@
+1.Test SumWordProcess
+
+	start master node
+	start three slave node
+	run 0 SumWordProcess in out
+	migrate SumWordProcess 0 1
+	migrate SumWordProcess 1 2
+	migrate SumWordProcess 2 0
+
+2.Test EncodeProcess
+
+	start master node
+	start three slave node
+	run 0 EncodeProcess in out
+	migrate EncodeProcess 0 1
+	migrate EncodeProcess 1 2
+	migrate EncodeProcess 2 0
+
+3.Test multiple task
+	start three slave node
+	run 0 SumWordProcess in out
+	run 0 EncodeProcess in out2
+	migrate EncodeProcess 0 1
+	migrate SumWordProcess 0 1
+	migrate SumWordProcess 1 2
+	migrate EncodeProcess 1 2
+	migrate SumWordProcess 2 0
+	migrate EncodeProcess 2 0
+
+	

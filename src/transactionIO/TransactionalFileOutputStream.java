@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * Created by wenhanl on 14-9-2.
  */
-public class TransactionalFileOutputStream extends OutputStream {
+public class TransactionalFileOutputStream extends OutputStream implements Serializable{
     private String fileName;
     private long offset;
     private transient RandomAccessFile fileHandler;

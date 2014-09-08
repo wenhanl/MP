@@ -5,6 +5,7 @@
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 
 public class MasterNode {
@@ -75,13 +76,42 @@ public class MasterNode {
                             System.out.println("error: slave not exists!");
                             continue;
                         }
-                        curslave.getoutputstream().writeChars(cmdInput);
+                        byte[] out = cmdInput.getBytes(Charset.forName("UTF-8"));
+                        curslave.getoutputstream().write(out);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 } else if (args[0].equals("migrate")) {
                     /* TODO */
+                    int slaveSrc = Integer.parseInt(args[2]);
+                   // int slaveDes = Integer.parseInt(args[3]);
+                    NodeInfo slaveSrcNode = slaveList.get(slaveSrc);
+                   // NodeInfo slaveDesNode = slaveList.get(slaveDes);
+                    try {
+                        String strans = "suspend" + " " + args[1];
+
+                        byte[] out = strans.getBytes(Charset.forName("UTF-8"));
+                        slaveSrcNode.getoutputstream().write(out);
+                        //Thread.sleep(5000);
+                       // slaveDesNode.getoutputstream().writeChars("restore" + " " + args[1]);
+                    }
+                    catch (IOException e ){}
+                  //  catch (InterruptedException e){}
+                    /*
+                    int slaveSrc = Integer.parseInt(args[2]);
+                    int slaveDes = Integer.parseInt(args[3]);
+                    NodeInfo slaveSrcNode = slaveList.get(slaveSrc);
+                    NodeInfo slaveDesNode = slaveList.get(slaveDes);
+
+                        slaveSrcNode.getoutputstream().writeChars("suspend" + " " + args[1]);
+
+
+                        slaveDesNode.getoutputstream().writeChars("suspend" + " " + args[1]);
+                        */
+
                 }
+
+
             }
         }
 

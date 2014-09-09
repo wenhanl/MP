@@ -6,7 +6,7 @@ import transactionIO.TransactionalFileOutputStream;
 /**
  * Created by CGJ on 14-9-8.
  *
- * This program use Caesar cipher to encode a text file
+ * This program use a simple encoding to encode a text file
  */
 public class EncodeProcess implements MigratableProcess{
     private TransactionalFileInputStream  inFile;

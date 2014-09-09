@@ -2,6 +2,7 @@
  * Created by wenhanl on 14-9-4.
  */
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -12,7 +13,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class MasterNode {
-    private HashMap<Integer,NodeInfo> slaveList;
+    private HashMap<String,NodeInfo> slaveList;
     public static final int PORT = 15640;
     private ByteBuffer readBuffer;
 
@@ -28,7 +29,7 @@ public class MasterNode {
         startConsole();
     }
 
-    // Open a background thread to listen to slave connection.
+    // Open a background thread to listen to slave connection and receive data.
     public void startListener(){
         Thread listening = new Thread(new Runnable() {
             public void run()
@@ -36,7 +37,7 @@ public class MasterNode {
                 try {
 
                     ServerSocketChannel serverChannel = ServerSocketChannel.open();
-                    serverChannel.socket().bind(new InetSocketAddress(PORT));
+                    serverChannel.socket().bind(new InetSocketAddress("localhost", PORT));
                     Selector selector = Selector.open();
                     serverChannel.configureBlocking(false);
 
@@ -58,9 +59,9 @@ public class MasterNode {
                                 ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
                                 SocketChannel sc = ssc.accept();
                                 sc.configureBlocking(false);
-                                sc.register(selector, SelectionKey.OP_READ);
-                                NodeInfo node = new NodeInfo(sc);
-                                slaveList.put(connection, node);
+                                SelectionKey connKey = sc.register(selector, SelectionKey.OP_READ);
+                                NodeInfo node = new NodeInfo(sc, connKey);
+                                slaveList.put(Integer.toString(connection), node);
                                 connection++;
 
                             }
@@ -73,36 +74,33 @@ public class MasterNode {
 
                                 int bufRead = sc.read(readBuffer);
 
+                                if(bufRead < 0){
 
+                                }
 
                                 String cmdInput = new String(readBuffer.array(),"UTF-8");
                                 String tmpBuf[] = cmdInput.split("\0");
                                 String args[]=tmpBuf[0].split(" ");
                                 if(args[0].equals("restore")){
-                                    int slaveDes = Integer.parseInt(args[3]);
+                                    String slaveDes = args[3];
                                     NodeInfo slaveDesNode = slaveList.get(slaveDes);
                                     sc = slaveDesNode.getSocketChannel();
                                     byte[] out = tmpBuf[0].getBytes(Charset.forName("UTF-8"));
                                     ByteBuffer buffer= ByteBuffer.wrap(out);
                                     sc.write(buffer);
                                 }
-
-
-
-
                             }
-
                             keyIterator.remove();
 
-
-
                         }
-
-
                     }
 
+                } catch (BindException e){
+                    System.out.println(e.getMessage());
+                    System.exit(1);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    System.exit(1);
                 }
             }
         });
@@ -123,26 +121,33 @@ public class MasterNode {
             String args[] = cmdInput.split(" ");
             SocketChannel sc = null;
             //process input command
-            if (args.length == 0) {
+            if(args.length == 0){
                 continue;
-            } else if (args[0].equals("list") && args.length == 1) {
+            }
+
+            if (args.length == 1 && args[0].equals("list")) {
                 printSlaveList();
-            } else if (args[0].equals("terminate") && args.length == 2) {
+            } else if (args.length == 2 && args[0].equals("terminate")) {
                 byte[] bytes = cmdInput.getBytes(Charset.forName("UTF-8"));
                 ByteBuffer buffer= ByteBuffer.wrap(bytes);
-                int slaveId = Integer.parseInt(args[1]);
+                String slaveId = args[1];
+                if(!slaveList.keySet().contains(slaveId)) {
+                    System.out.println("Wrong Node ID: no such node connected with master.");
+                    continue;
+                }
                 NodeInfo curSlave = slaveList.get(slaveId);
                 try {
                     sc = curSlave.getSocketChannel();
                     sc.write(buffer);
+                    slaveList.remove(slaveId);
+                    curSlave.getKey().cancel(); // deregister from socketChannel selector
                     sc.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                slaveList.remove(slaveId);
             //run process in the specific slave node
-            } else if (args[0].equals("run") && args.length >= 3) {
-                int slaveid = Integer.parseInt(args[1]);
+            } else if ( args.length >= 3 && args[0].equals("run")) {
+                String slaveid = args[1];
                 NodeInfo curSlave = slaveList.get(slaveid);
                 try {
                     if (curSlave == null) {
@@ -158,8 +163,12 @@ public class MasterNode {
                     e.printStackTrace();
                 }
                 //migrate process from one slave node to another
-            } else if(args[0].equals("migrate") && args.length >= 3){
-                int slaveSrc = Integer.parseInt(args[2]);
+            } else if(args.length >= 3 && args[0].equals("migrate") ){
+                String slaveSrc = args[2], slaveDst = args[3];
+                if(!slaveList.keySet().contains(slaveSrc) || !slaveList.keySet().contains(slaveDst)){
+                    System.out.println("Wrong src or dst ID: src and dst must all be connected with master");
+                    continue;
+                }
                 NodeInfo slaveSrcNode = slaveList.get(slaveSrc);
                 try {
                     String strans = "suspend" + " " + args[1] + " " + args[2] + " " + args[3];
@@ -177,8 +186,8 @@ public class MasterNode {
 
     public void printSlaveList(){
         Object[] arr = slaveList.keySet().toArray();
-        for(int i=0;i<arr.length;i++)
-            System.out.println("Slave ID: "+i+"\t "+slaveList.get(i).toString());
+        for(int i=0; i<arr.length; i++)
+            System.out.println("Slave ID: "+arr[i]+"\t "+slaveList.get(arr[i]).toString());
     }
 
 }

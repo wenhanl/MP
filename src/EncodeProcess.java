@@ -6,7 +6,7 @@ import transactionIO.TransactionalFileOutputStream;
 /**
  * Created by CGJ on 14-9-8.
  *
- * This program use Caesar cipher to encode a text file
+ * This program use a simple encoding to encode a text file
  */
 public class EncodeProcess implements MigratableProcess{
     private TransactionalFileInputStream  inFile;
@@ -34,7 +34,7 @@ public class EncodeProcess implements MigratableProcess{
             while(!suspending) {
                 int x = in.readChar();
                 out.writeChar((char)(x+3));
-                System.out.println((char)x);
+                System.out.print((char)(x+3));
                 Thread.sleep(500);
             }
         }

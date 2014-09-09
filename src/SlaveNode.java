@@ -67,6 +67,7 @@ public class SlaveNode {
                         if(bufRead == -1){
                             System.out.println("Remote socket closed");
                             closed = true;
+                            continue;
                         }
 
                         String cmdInput = new String(readBuffer.array(),"UTF-8");

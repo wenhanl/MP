@@ -2,7 +2,7 @@
 # define a variable for the compiler (JC)  
 # define a variable for the Java Virtual Machine (JVM)
 # define a variable for a parameter. When you run make, you could use:
-# make run FILE="Algo.csv" para sobre escribir el valor de FILE. 
+
 
 JFLAGS = -g
 JC = javac
@@ -44,8 +44,8 @@ FILE=
 
 CLASSES = \
         GrepProcess.java \
-	EncodeProcess.java \
-	SumWordProcess.java \
+	    EncodeProcess.java \
+	    SumWordProcess.java \
         MasterNode.java \
         MigratableProcess.java \
         NodeInfo.java \
@@ -58,7 +58,7 @@ CLASSES = \
 # MAIN is a variable with the name of the file containing the main method
 #
 
-MAIN = slove 
+MAIN = nothing
 
 #
 # the default make target entry

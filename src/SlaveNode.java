@@ -92,18 +92,22 @@ public class SlaveNode {
                             } catch (InvocationTargetException e) {
                                 e.printStackTrace();
                             }
+                            System.out.println("\nJob "+args[2]+" start on this slave!");
                             Thread tp = new Thread(mpProcess);
                             tp.start();
-                            processList.put(args[2],mpProcess);
+                            processList.put(args[2], mpProcess);
                         }
                         else if(args[0].equals("terminate"))
                             System.exit(1);
+                        else if(args[0].equals("plist"))
+                            sendProcessInfo();
                         else if(args[0].equals("suspend")){
                             MigratableProcess proSuspend = processList.get(args[1]);
                             if(proSuspend == null) {
                                 System.out.println("No such process exists!");
                                 continue;
                             }
+                            System.out.println("\nJob "+args[1]+" done on this slave!");
                             proSuspend.suspend();
                             processList.remove(args[1]);
                             FileOutputStream outObjStream = new FileOutputStream(args[1]+".obj");
@@ -129,6 +133,7 @@ public class SlaveNode {
                             }
                             inObj.close();
                             inObjStream.close();
+                            System.out.println("\nJob "+args[1]+" start on this slave!");
                             Thread rt = new Thread(proRestore);
                             rt.start();
                             processList.put(args[1],proRestore);
@@ -139,5 +144,20 @@ public class SlaveNode {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public void sendProcessInfo (){
+        Object[] arr = processList.keySet().toArray();
+        StringBuilder sendStr = new StringBuilder();
+        sendStr.append("pinfo");
+        for(int i=0;i<arr.length;i++)
+            sendStr.append(" " + arr[i]);
+        byte[] out = sendStr.toString().getBytes(Charset.forName("UTF-8"));
+        ByteBuffer buffer= ByteBuffer.wrap(out);
+        try {
+            sc.write(buffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

@@ -25,7 +25,6 @@ public class SumWordProcess implements MigratableProcess {
 
     }
     public void run(){
-        System.out.println("Job start on this slave!");
         DataInputStream br = new DataInputStream(inFile);
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(outFile));
         try {
@@ -68,7 +67,6 @@ public class SumWordProcess implements MigratableProcess {
     }
     public void suspend(){
         suspending = true;
-        System.out.println("Job done on this slave!");
         while (suspending);
     }
 

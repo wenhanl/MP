@@ -86,6 +86,13 @@ public class MasterNode {
                                     ByteBuffer buffer= ByteBuffer.wrap(out);
                                     sc.write(buffer);
                                 }
+                                else if(args[0].equals("pinfo")){
+                                    System.out.println("---------------");
+                                    for(int i=1;i<args.length;i++)
+                                        System.out.println(args[i]);
+                                    System.out.println("--> ---------------");
+                                    System.out.print("-->");
+                                }
 
 
 
@@ -127,7 +134,7 @@ public class MasterNode {
                 continue;
             } else if (args[0].equals("list") && args.length == 1) {
                 printSlaveList();
-            } else if (args[0].equals("terminate") && args.length == 2) {
+            } else if ((args[0].equals("terminate") || args[0].equals("plist")) && args.length == 2) {
                 byte[] bytes = cmdInput.getBytes(Charset.forName("UTF-8"));
                 ByteBuffer buffer= ByteBuffer.wrap(bytes);
                 int slaveId = Integer.parseInt(args[1]);
@@ -135,11 +142,13 @@ public class MasterNode {
                 try {
                     sc = curSlave.getSocketChannel();
                     sc.write(buffer);
-                    sc.close();
+                    if(args[0].equals("terminate")) {
+                        slaveList.remove(slaveId);
+                        sc.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                slaveList.remove(slaveId);
             //run process in the specific slave node
             } else if (args[0].equals("run") && args.length >= 3) {
                 int slaveid = Integer.parseInt(args[1]);

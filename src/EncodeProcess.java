@@ -26,15 +26,17 @@ public class EncodeProcess implements MigratableProcess{
 
     public void run()
     {
-        System.out.println("Job start on this slave!");
         DataOutputStream out = new DataOutputStream(outFile);
         DataInputStream in = new DataInputStream(inFile);
+        DataOutputStream sysOut = new DataOutputStream(System.out);
         //encode here
         try {
             while(!suspending) {
                 int x = in.readChar();
                 out.writeChar((char)(x+3));
-                System.out.println((char)x);
+                out.flush();
+                sysOut.writeChar(x);
+                sysOut.flush();
                 Thread.sleep(500);
             }
         }
@@ -57,7 +59,6 @@ public class EncodeProcess implements MigratableProcess{
     public void suspend()
     {
         suspending = true;
-        System.out.println("Job done on this slave!");
         while (suspending);
     }
 

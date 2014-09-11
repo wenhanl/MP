@@ -76,7 +76,17 @@ public class MasterNode {
                                 int bufRead = sc.read(readBuffer);
 
                                 if(bufRead < 0){
-
+                                    System.out.println("Connection lost from one slave");
+                                    // Remove from select list
+                                    key.cancel();
+                                    // Remove from slave list
+                                    Object[] set = slaveList.keySet().toArray();
+                                    for(int i = 0; i < set.length; i++){
+                                        if(slaveList.get(set[i]).getKey().equals(key)){
+                                            slaveList.remove(set[i]);
+                                        }
+                                    }
+                                    continue;
                                 }
 
                                 String cmdInput = new String(readBuffer.array(),"UTF-8");
@@ -124,7 +134,7 @@ public class MasterNode {
             System.out.print("--> ");
             try {
                 cmdInput = buffInput.readLine();
-                if(cmdInput == null) continue;
+                if(cmdInput == null) break;
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
@@ -161,11 +171,11 @@ public class MasterNode {
             } else if ( args.length >= 3 && args[0].equals("run")) {
                 String slaveid = args[1];
                 NodeInfo curSlave = slaveList.get(slaveid);
+                if (curSlave == null) {
+                    System.out.println("error: slave not exists!");
+                    continue;
+                }
                 try {
-                    if (curSlave == null) {
-                        System.out.println("error: slave not exists!");
-                        continue;
-                    }
                     sc = curSlave.getSocketChannel();
                     byte[] bytes = cmdInput.getBytes(Charset.forName("UTF-8"));
                     ByteBuffer buffer= ByteBuffer.wrap(bytes);

@@ -1,9 +1,5 @@
 
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -114,14 +110,19 @@ public class SlaveNode {
             mpProcess = (MigratableProcess) mpConstructor.newInstance(args);
         } catch (ClassNotFoundException e) {
             System.err.format("Class Not Found: Can't find class with provided class name", e.getMessage());
+            return;
         } catch (NoSuchMethodException e) {
             System.err.format("No such method: No such constructor", e.getMessage());
+            return;
         } catch (InstantiationException e) {
             System.err.format("Instantiation Error:", e.getMessage());
+            return;
         } catch (IllegalAccessException e) {
             System.out.println(e.getMessage());
+            return;
         } catch (InvocationTargetException e) {
             System.out.println(e.getMessage());
+            return;
         }
         System.out.println("\nJob "+name+" start on this slave!");
         Thread tp = new Thread(mpProcess);
@@ -165,7 +166,13 @@ public class SlaveNode {
         }
         inObj.close();
         inObjStream.close();
-        System.out.println("\nJob "+name+" start on this slave!");
+
+        // Delete the obj file
+        File objFile = new File(name + ".obj");
+        if(!objFile.delete()){
+            System.out.println("Fail to delete obj file");
+        }
+        System.out.println("\nJob " + name + " start on this slave!");
         Thread rt = new Thread(proRestore);
         rt.start();
         processList.put(name,proRestore);

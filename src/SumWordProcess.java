@@ -15,6 +15,8 @@ public class SumWordProcess implements MigratableProcess {
     private volatile boolean suspending;
     int total = 0;
     int lineNum = 1;
+    private boolean finished;
+
     public SumWordProcess(String[] args) throws Exception{
         if (args.length != 2 ) {
             System.out.println("usage: SumWordProcess <inputfile> <outputfile>");
@@ -22,7 +24,7 @@ public class SumWordProcess implements MigratableProcess {
         }
         inFile = new TransactionalFileInputStream(args[0]);
         outFile = new TransactionalFileOutputStream(args[1],false);
-
+        finished = false;
     }
     public void run(){
         DataInputStream br = new DataInputStream(inFile);
@@ -49,7 +51,7 @@ public class SumWordProcess implements MigratableProcess {
         }
 
         catch(EOFException e){
-            e.printStackTrace();
+            finished = true;
         }
         catch(IOException e){
             e.printStackTrace();
@@ -67,7 +69,7 @@ public class SumWordProcess implements MigratableProcess {
     }
     public void suspend(){
         suspending = true;
-        while (suspending);
+        while (suspending && !finished);
     }
 
 

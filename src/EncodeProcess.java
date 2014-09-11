@@ -12,6 +12,7 @@ public class EncodeProcess implements MigratableProcess{
     private TransactionalFileInputStream  inFile;
     private TransactionalFileOutputStream outFile;
     private volatile boolean suspending;
+    boolean finished;
 
 
     public EncodeProcess (String args[]) throws Exception
@@ -22,6 +23,7 @@ public class EncodeProcess implements MigratableProcess{
         }
         inFile = new TransactionalFileInputStream(args[0]);
         outFile = new TransactionalFileOutputStream(args[1], false);
+        finished = false;
     }
 
     public void run()
@@ -43,6 +45,7 @@ public class EncodeProcess implements MigratableProcess{
         catch (InterruptedException e) {}
         catch (IOException e){
             e.printStackTrace();
+            finished = true;
         }
 
         try {
@@ -59,7 +62,7 @@ public class EncodeProcess implements MigratableProcess{
     public void suspend()
     {
         suspending = true;
-        while (suspending);
+        while (suspending && !finished);
     }
 
 }

@@ -14,7 +14,6 @@ import java.util.Set;
 
 public class MasterNode {
     private HashMap<String,NodeInfo> slaveList;
-    public static final int PORT = 15640;
     private ByteBuffer readBuffer;
 
     MasterNode(){
@@ -37,7 +36,7 @@ public class MasterNode {
                 try {
 
                     ServerSocketChannel serverChannel = ServerSocketChannel.open();
-                    serverChannel.socket().bind(new InetSocketAddress("localhost", PORT));
+                    serverChannel.socket().bind(new InetSocketAddress(ClusterConfig.HOSTNAME, ClusterConfig.PORT));
                     Selector selector = Selector.open();
                     serverChannel.configureBlocking(false);
 
@@ -54,7 +53,8 @@ public class MasterNode {
 
                         while(keyIterator.hasNext()){
                             SelectionKey key = keyIterator.next();
-                            //incoming connection
+
+                            // Incoming connection
                             if(key.isAcceptable()){
                                 ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
                                 SocketChannel sc = ssc.accept();
@@ -65,6 +65,7 @@ public class MasterNode {
                                 connection++;
 
                             }
+                            // Incoming data
                             else if(key.isReadable()){
                                 SocketChannel sc = (SocketChannel) key.channel();
                                 readBuffer.clear();
@@ -97,10 +98,6 @@ public class MasterNode {
                                     System.out.print("-->");
                                 }
 
-
-
-
-
                             }
                             keyIterator.remove();
 
@@ -111,7 +108,7 @@ public class MasterNode {
                     System.out.println(e.getMessage());
                     System.exit(1);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                     System.exit(1);
                 }
             }
@@ -127,8 +124,9 @@ public class MasterNode {
             System.out.print("--> ");
             try {
                 cmdInput = buffInput.readLine();
+                if(cmdInput == null) continue;
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
             String args[] = cmdInput.split(" ");
             SocketChannel sc = null;
@@ -157,7 +155,7 @@ public class MasterNode {
                         sc.close();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
             //run process in the specific slave node
             } else if ( args.length >= 3 && args[0].equals("run")) {
@@ -174,7 +172,7 @@ public class MasterNode {
                     sc.write(buffer);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
                 //migrate process from one slave node to another
             } else if(args.length >= 3 && args[0].equals("migrate") ){
@@ -191,14 +189,16 @@ public class MasterNode {
                     ByteBuffer buffer= ByteBuffer.wrap(out);
                     sc.write(buffer);
                 }
-                catch (IOException e ){}
+                catch (IOException e ){
+                    System.out.println(e.getMessage());
+                }
             } else {
                 System.out.println("Invalid input");
             }
         }
     }
 
-    public void printSlaveList(){
+    private void printSlaveList(){
         Object[] arr = slaveList.keySet().toArray();
         for(int i=0; i<arr.length; i++)
             System.out.println("Slave ID: "+arr[i]+"\t "+slaveList.get(arr[i]).toString());

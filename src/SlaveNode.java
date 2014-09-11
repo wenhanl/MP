@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 public class SlaveNode {
     private SocketChannel sc;
     private HashMap<String, MigratableProcess> processList = new HashMap<>();
+    private HashMap<String, Thread> threadList = new HashMap<>();
     private ByteBuffer readBuffer;
     private int bufLen = 500;
 
@@ -102,7 +103,16 @@ public class SlaveNode {
     }
 
     // Run process
-    private void runProcess(String name, Object[] args){
+    private void runProcess(String name, Object[] args) throws IOException{
+        if(processList.get(name) != null){
+            if(threadList.get(name).isAlive()) {
+                sendToMaster("RunningError");
+                return;
+            } else {
+                threadList.remove(name);
+                processList.remove(name);
+            }
+        }
         MigratableProcess mpProcess = null;
         try {
             Class<MigratableProcess> mpClass = (Class<MigratableProcess>) Class.forName(name);
@@ -128,6 +138,7 @@ public class SlaveNode {
         Thread tp = new Thread(mpProcess);
         tp.start();
         processList.put(name, mpProcess);
+        threadList.put(name, tp);
     }
 
     // Suspend Process
@@ -135,6 +146,15 @@ public class SlaveNode {
         MigratableProcess proSuspend = processList.get(name);
         if(proSuspend == null) {
             System.out.println("No such process exists!");
+            sendToMaster("NameError");
+            return false;
+        }
+
+        if(!threadList.get(name).isAlive()){
+            processList.remove(name);
+            threadList.remove(name);
+            System.out.println("Process Finished running");
+            sendToMaster("NameError");
             return false;
         }
         System.out.println("\nJob " + name + " done on this slave!");
@@ -148,9 +168,7 @@ public class SlaveNode {
         outObjStream.close();
 
         String str = "restore" + " " + name + " " + src + " " + dst;
-        byte[] out = str.getBytes(Charset.forName("UTF-8"));
-        ByteBuffer buffer= ByteBuffer.wrap(out);
-        sc.write(buffer);
+        sendToMaster(str);
         return true;
     }
 
@@ -183,8 +201,14 @@ public class SlaveNode {
         Object[] arr = processList.keySet().toArray();
         StringBuilder sendStr = new StringBuilder();
         sendStr.append("pinfo");
-        for(int i=0;i<arr.length;i++)
-            sendStr.append(" " + arr[i]);
+        for(int i=0;i<arr.length;i++) {
+            if(threadList.get(arr[i]).isAlive())
+                sendStr.append(" " + arr[i]);
+            else {
+                processList.remove(arr[i]);
+                threadList.remove(arr[i]);
+            }
+        }
         byte[] out = sendStr.toString().getBytes(Charset.forName("UTF-8"));
         ByteBuffer buffer= ByteBuffer.wrap(out);
         try {
@@ -193,5 +217,11 @@ public class SlaveNode {
             System.out.println(e.getMessage());
         }
 
+    }
+
+    private void sendToMaster(String msg) throws IOException{
+        byte[] out = msg.getBytes(Charset.forName("UTF-8"));
+        ByteBuffer buffer= ByteBuffer.wrap(out);
+        sc.write(buffer);
     }
 }

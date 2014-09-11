@@ -15,7 +15,7 @@ public class SumWordProcess implements MigratableProcess {
     private volatile boolean suspending;
     int total = 0;
     int lineNum = 1;
-    private boolean finished;
+    private volatile boolean finished;
 
     public SumWordProcess(String[] args) throws Exception{
         if (args.length != 2 ) {

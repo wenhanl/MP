@@ -91,6 +91,16 @@ public class MasterNode {
 
                                 String cmdInput = new String(readBuffer.array(),"UTF-8");
                                 String tmpBuf[] = cmdInput.split("\0");
+                                if(tmpBuf[0].equals("NameError")){
+                                    System.out.println("Wrong Process Name or process finished running");
+                                    System.out.print("--> ");
+                                    continue;
+                                }
+                                if(tmpBuf[0].equals("RunningError")){
+                                    System.out.println("Process Already Running");
+                                    System.out.print("--> ");
+                                    continue;
+                                }
                                 String args[]=tmpBuf[0].split(" ");
                                 if(args[0].equals("restore")){
                                     String slaveDes = args[3];

@@ -46,7 +46,7 @@ public class MasterNode {
                     while(true){
                         int readyChannels = selector.select();
 
-                        if(readyChannels == 0) continue;
+                        //if(readyChannels == 0) continue;
 
                         Set<SelectionKey> keys = selector.selectedKeys();
                         Iterator<SelectionKey> keyIterator = keys.iterator();
@@ -91,6 +91,7 @@ public class MasterNode {
 
                                 String cmdInput = new String(readBuffer.array(),"UTF-8");
                                 String tmpBuf[] = cmdInput.split("\0");
+                                if(tmpBuf.length == 0) continue;
                                 if(tmpBuf[0].equals("NameError")){
                                     System.out.println("Wrong Process Name or process finished running");
                                     System.out.print("--> ");
@@ -212,8 +213,12 @@ public class MasterNode {
                 catch (IOException e ){
                     System.out.println(e.getMessage());
                 }
-            } else {
+            } else if(args[0].equals("help") && args.length == 1) {
+                printHelp();
+
+            }else {
                 System.out.println("Invalid input");
+                printHelp();
             }
         }
     }
@@ -222,6 +227,16 @@ public class MasterNode {
         Object[] arr = slaveList.keySet().toArray();
         for(int i=0; i<arr.length; i++)
             System.out.println("Slave ID: "+arr[i]+"\t "+slaveList.get(arr[i]).toString());
+    }
+
+    private void printHelp(){
+        System.out.println("\tUsage:");
+        System.out.println("\t List: list");
+        System.out.println("\t Run: run <slave id> <process name> <process arguments...>");
+        System.out.println("\t \t process list are <input file> <output file> in our examples");
+        System.out.println("\t Migrate: migrate <process name> <src id> <dst id>");
+        System.out.println("\t Terminate: terminate <slave id>");
+        System.out.println("\t Print Process list: plist <slave id>");
     }
 
 }

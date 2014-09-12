@@ -23,11 +23,11 @@ public class SlaveNode {
     private ByteBuffer readBuffer;
     private int bufLen = 500;
 
-    SlaveNode(){
+    SlaveNode(String hostname, int port){
         // Open a socket channel connecting to master node on port 15640
         try {
             sc = SocketChannel.open();
-            sc.connect(new InetSocketAddress(ClusterConfig.HOSTNAME, ClusterConfig.PORT));
+            sc.connect(new InetSocketAddress(hostname, port));
             sc.configureBlocking(false);
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -194,6 +194,7 @@ public class SlaveNode {
         Thread rt = new Thread(proRestore);
         rt.start();
         processList.put(name,proRestore);
+        threadList.put(name, rt);
     }
 
     // Send process info back to Master in respond for plist command

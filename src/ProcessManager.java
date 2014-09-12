@@ -13,11 +13,13 @@ public class ProcessManager {
             MasterNode master = new MasterNode();
 
         }
-        else if (args.length >= 1 && args[0].equals("-s")){
-            SlaveNode slave = new SlaveNode();
+        else if (args.length == 3 && args[0].equals("-s")){
+            SlaveNode slave = new SlaveNode(args[1], Integer.parseInt(args[2]));
         }
         else {
             // Error message
+            System.out.println("Wrong input: pls try again");
+            System.exit(1);
         }
 
     }

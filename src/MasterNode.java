@@ -36,7 +36,7 @@ public class MasterNode {
                 try {
 
                     ServerSocketChannel serverChannel = ServerSocketChannel.open();
-                    serverChannel.socket().bind(new InetSocketAddress(ClusterConfig.HOSTNAME, ClusterConfig.PORT));
+                    serverChannel.socket().bind(new InetSocketAddress(ClusterConfig.PORT));
                     Selector selector = Selector.open();
                     serverChannel.configureBlocking(false);
 

@@ -43,7 +43,6 @@ FILE=
 #
 
 CLASSES = \
-        GrepProcess.java \
 	    EncodeProcess.java \
 	    SumWordProcess.java \
         MasterNode.java \
